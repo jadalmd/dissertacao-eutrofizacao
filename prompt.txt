@@ -1,42 +1,127 @@
+# Prompt Title: Python Script for Fully Automated Eutrophication Risk Assessment in the Epitácio Pessoa Reservoir (Boqueirão-PB)
 
-# Objective
-Write a Python script using the Google Earth Engine (ee) API to monitor water quality in the Epitácio Pessoa Reservoir (Boqueirão, Paraíba, Brazil).
+# Objective:
+# Generate a comprehensive, fully automated Python script for a Master's research project in Civil and Environmental Engineering. The script will use the Google Earth Engine (GEE) API to assess eutrophication risk in the Epitácio Pessoa Reservoir, Paraíba, Brazil. The script must be executable from the command line and require no manual intervention after initial setup. It should be modular, well-documented, and follow Python best practices.
 
-# Requirements
-1. **Authentication and Study Area:**
-   - Authenticate with Earth Engine.
-   - Define the study area geometry by calculating the Modified Normalized Difference Water Index (MNDWI) from a cloud-free image and vectorizing the resulting water body. Use a 10-year period to identify the maximum water extent. The MNDWI formula is `MNDWI = (Green - SWIR) / (Green + SWIR)`.
+# Scientific Context and Methodology:
+# The script will implement a workflow for monitoring water quality indicators relevant to eutrophication.
+# 1. Watershed Delineation: The study area will be automatically defined as the watershed of the Epitácio Pessoa Reservoir. This is a crucial step for hydrological and environmental analysis.
+# 2. Water Masking: Only water pixels will be analyzed. This prevents contamination from land, vegetation, and shadows, ensuring accurate index calculation.
+# 3. Water Quality Indices: Three key indices will be calculated to assess water quality:
+#    - NDCI (Normalized Difference Chlorophyll Index) as a proxy for Chlorophyll-a (Chl-a) concentration. Chl-a is a primary indicator of algal biomass and eutrophication.
+#    - TSS (Total Suspended Solids) to measure turbidity.
+#    - Zsd (Secchi Disk Depth) to estimate water transparency.
+# 4. Temporal Analysis and Export: The indices will be aggregated monthly to create a time series, which will be exported for further analysis and reporting.
+# 5. Visualization: The results will be visualized in a time series plot and an interactive map.
 
-2. **Data and Processing:**
-   - Load the Sentinel-2 Surface Reflectance collection (COPERNICUS/S2_SR) for a **10-year period** defined by global variables `START_DATE` and `END_DATE`.
-   - Apply a cloud mask using the `QA60` band.
-   - Clip all images to the delimited study area.
+# Instructions for Copilot Pro:
 
-3. **Water Quality Indices:**
-   - Implement separate functions to compute:
-     - Chlorophyll-a (Chl-a): `Chl-a = 21 * (B8 / B4) - 5`
-     - Turbidity (TSS): `TSS = 228.1 * (B4 / (1 - (B4 / 0.1686))) + 1.18` (based on Nechad 2010)
-     - Secchi Disk depth (Zsd, water transparency): `Zsd = 8.24 * log(B3 / B2) + 10.6`
-   - All spectral variable calculations must include comments referencing the original formulas.
+# 1. Project Setup:
+#    - Create a file structure: `src/main.py`, `requirements.txt`, and `README.md`.
+#    - In `requirements.txt`, list the following dependencies: `earthengine-api`, `pandas`, `numpy`, `matplotlib`, `folium`, `geopandas`, `tqdm`, `eerepr`.
+#    - The script should be runnable with Python 3.10 and a Conda environment.
 
-4. **Outputs and Visualization:**
-   - Generate time series plots (averages over the study area) for each index.
-   - Export monthly mean results as both CSV and JSON, with all outputs saved in a local `/outputs/` folder.
-   - Use filenames in the format: `indices_boqueirao_STARTDATE_ENDDATE.csv`.
-   - Create an interactive Folium map showing mean values for a selected date.
+# 2. `src/main.py` Scripting Logic:
+#    - Import necessary libraries at the top: `ee`, `os`, `sys`, `pandas`, `geopandas`, `folium`, `matplotlib.pyplot`, `tqdm`.
+#    - Define global parameters. Important: These GEE-dependent variables must be defined *after* the `ee.Initialize()` call in the main function.
+#      - `START_DATE`: '2023-01-01'.
+#      - `END_DATE`: '2024-12-31'.
+#      - `GCP_PROJECT`: A placeholder for the user's Google Cloud Project ID.
+#      - `OUTPUT_DIR`: 'outputs'.
 
-5. **Code Structure and Best Practices:**
-   - Organize code into clear functions: `mask_clouds`, `calc_mndwi_and_vectorize`, `calc_chla`, `calc_tss`, `calc_secchi`, `export_results`, `plot_timeseries`, `create_folium_map`.
-   - Follow Python best practices and add comments for each step.
-   - Add simple logging messages in the terminal (e.g., "Calculating MNDWI and vectorizing...", "Exporting CSV...").
-   - The code must be compatible with Python 3.11+.
+#    - Implement the following functions:
 
-6. **README.md Generation:**
-   - After generating the script, also create a `README.md` file including:
-     - Project description.
-     - Installation instructions (Python dependencies and Earth Engine authentication).
-     - How to define `START_DATE` and `END_DATE`.
-     - How to run the script and visualize results.
-     - How to access generated files inside `/outputs/`.
-     - Example of how to use the raw.githubusercontent URL to connect CSV/JSON files directly to a web mapping platform.
-```
+#    - `authenticate_ee(gcp_project)`:
+#      - Input: `gcp_project` (string).
+#      - Description: Handles GEE authentication and ensures the client library is initialized. It should be the first function called in the main execution block.
+#      - Method: Call `ee.Authenticate()` and `ee.Initialize(project=gcp_project)`. Include a `try...except` block to handle potential authentication errors.
+
+#    - `delineate_watershed(poi)`:
+#      - Input: `poi` (ee.Geometry.Point).
+#      - Description: Automatically delineates the watershed.
+#      - Method: Use the SRTM Digital Elevation Data V4 (`USGS/SRTMGL1_003`). Apply `ee.Terrain.watershed()` centered at the `poi`.
+#      - Output: An `ee.Geometry.Polygon` representing the reservoir's watershed.
+#      - Logging: Print a message like "Delineating watershed for the study area..."
+
+#    - `mask_sentinel2_water(image)`:
+#      - Input: An `ee.Image` from the Sentinel-2 SR collection.
+#      - Description: Creates a robust water and cloud/shadow mask using the Scene Classification Layer (SCL) and the Normalized Difference Water Index (NDWI). This prevents contamination from land, clouds, and shadows.
+#      - Method:
+#        - SCL Mask: Create a mask from the `SCL` band. The mask should select pixels classified as 'water' (class 6). It must also mask out pixels classified as 'clouds' (classes 8 and 9), 'cloud shadows' (class 3), and 'snow/ice' (class 11).
+#        - NDWI Mask: Calculate NDWI using Sentinel-2 bands B3 (Green) and B8 (NIR) as per `(B3 - B8) / (B3 + B8)`. Apply a threshold (e.g., `ndwi > 0.1`).
+#        - Final Mask: Combine the SCL and NDWI masks to get the final, clean water-only layer.
+#      - Output: The input `ee.Image` with the final mask applied.
+#      - Reference: McFeeters, S. K. (1996). "The use of the Normalized Difference Water Index (NDWI) in the delineation of open water features." International Journal of Remote Sensing.
+
+#    - `calculate_indices(image)`:
+#      - Input: A masked `ee.Image`.
+#      - Description: Calculates the water quality indices.
+#      - Formulas:
+#        - **NDCI (Normalized Difference Chlorophyll Index)**: `(B5 - B4) / (B5 + B4)`.
+#        - **TSS (Total Suspended Solids)**: `TSS = (496.09 * B4) / (1 - (B4 / 0.22))`. This formula is a simplification of the Nechad et al. (2010) model adapted for Sentinel-2 bands.
+#        - **Zsd (Secchi Disk Depth)**: `Zsd = 1.48 * (B2 / B3) + 0.12`.
+#      - Output: The `ee.Image` with new bands for each index (`ndci`, `tss`, `zsd`).
+#      - References:
+#        - NDCI: Mishra, S., & Mishra, D. R. (2012). "Normalized Difference Chlorophyll Index: A novel remote sensing approach to monitor inland chlorophyll dynamics." Remote Sensing of Environment.
+#        - TSS: Nechad, B., Ruddick, K., & Park, Y. (2010). "Calibration and validation of a generic multisensor algorithm for mapping of total suspended matter in turbid waters." Remote Sensing of Environment.
+#        - Zsd: Page, T., et al. (2019). "Satellite remote sensing of water clarity in inland waters: A validation of the use of Landsat 8 for the Water Framework Directive in the UK." Science of The Total Environment.
+
+#    - `process_image_collection(start_date, end_date, roi)`:
+#      - Input: Date range (`start_date`, `end_date`), and ROI (`ee.Geometry`).
+#      - Description: Filters the Sentinel-2 collection, applies the water mask, calculates indices, and aggregates monthly.
+#      - Logic:
+#        - Load `COPERNICUS/S2_SR` collection.
+#        - Filter by date and bounds. Note: Cloud filtering is handled by the `mask_sentinel2_water` function.
+#        - Map the `mask_sentinel2_water` and `calculate_indices` functions over the collection.
+#        - Group the collection by month and apply a reducer (`ee.Reducer.mean()`) to each group.
+#      - Output: The final `ee.ImageCollection` with monthly mean index values.
+#      - Logging: Print progress messages like "Processing image collection..." and "Aggregating monthly data..."
+
+#    - `export_results(monthly_collection, roi, start_date, end_date)`:
+#      - Input: The monthly `ee.ImageCollection`, ROI, and date range.
+#      - Description: Exports the data to local files.
+#      - Logic:
+#        - Create the `outputs` directory if it doesn't exist.
+#        - Convert the monthly collection to a feature collection of points.
+#        - Export to a CSV file (`indices_boqueirao_<start>_<end>.csv`). The table should include `date`, `ndci`, `tss`, and `zsd`.
+#        - Export to a GeoJSON file (`indices_boqueirao_<start>_<end>.geojson`).
+#      - Output: Saved `.csv` and `.geojson` files in the `outputs` directory.
+#      - Logging: "Exporting data to CSV and GeoJSON..."
+
+#    - `create_visualizations(df, roi_polygon_local)`:
+#      - Input: The pandas DataFrame from the exported CSV and the local GeoJSON for the ROI.
+#      - Description: Generates time series plots and an interactive Folium map.
+#      - Logic:
+#        - **Time Series Plot**:
+#          - Use `matplotlib.pyplot` to create a figure with three subplots (one for each index: NDCI, TSS, Zsd).
+#          - Plot the monthly mean values over time.
+#          - Add titles, labels, and legends.
+#          - Save the plot as a PNG file (`outputs/timeseries_plot.png`).
+#        - **Folium Map**:
+#          - Initialize a `folium.Map` centered on the reservoir.
+#          - Add a base tile layer (e.g., OpenStreetMap or GEE's satellite imagery).
+#          - Use `folium.GeoJson` to add the reservoir polygon from the local GeoJSON file with a clear, styled border.
+#          - Add markers or a heatmap based on the NDCI values.
+#          - Save the map as an HTML file (`outputs/map_boqueirao.html`).
+#      - Output: Saved `.png` and `.html` files in the `outputs` directory.
+#      - Logging: "Generating visualizations..."
+
+# 3. Main Script Execution:
+#    - Add the main execution block (`if __name__ == "__main__":`).
+#    - Within this block, the very first command must be a call to `authenticate_ee()`.
+#    - After authentication, define the GEE-dependent variables, such as `POI = ee.Geometry.Point(...)`.
+#    - Then, call the other functions in the correct order: `delineate_watershed`, `process_image_collection`, `export_results`, `create_visualizations`.
+#    - Wrap the calls in a `try...except` block for general error handling.
+#    - Use `tqdm` to show progress on the GEE aggregation process.
+
+# 4. `README.md` Generation:
+#    - Create a detailed `README.md` file.
+#    - Section: "Project Overview" - brief description of the project goal and methodology.
+#    - Section: "Workflow Steps" - a numbered list outlining the automation steps (Authentication, Watershed Delineation, Water Masking, etc.).
+#    - Section: "Installation & Setup" - instructions for creating a Conda environment and installing dependencies from `requirements.txt`.
+#    - Section: "Usage Instructions" - how to run the script and what to expect.
+#    - Section: "Output Files" - a list and description of all output files.
+#    - Section: "Scientific Methodology & References" - a list of the scientific methods and a full list of citations for NDWI, NDCI, TSS, and Zsd. Ensure the references are properly formatted.
+
+# Final Code Style:
+# The generated code must be well-commented to explain each step, especially the GEE API calls and the index formulas. Use clear variable names and follow PEP 8 conventions. The script should be completely automated without any hardcoded paths that would prevent reproducibility on another machine.
