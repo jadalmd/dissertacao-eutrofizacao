@@ -1,0 +1,42 @@
+
+# Objective
+Write a Python script using the Google Earth Engine (ee) API to monitor water quality in the Epitácio Pessoa Reservoir (Boqueirão, Paraíba, Brazil).
+
+# Requirements
+1. **Authentication and Study Area:**
+   - Authenticate with Earth Engine.
+   - Define the study area geometry by calculating the Modified Normalized Difference Water Index (MNDWI) from a cloud-free image and vectorizing the resulting water body. Use a 10-year period to identify the maximum water extent. The MNDWI formula is `MNDWI = (Green - SWIR) / (Green + SWIR)`.
+
+2. **Data and Processing:**
+   - Load the Sentinel-2 Surface Reflectance collection (COPERNICUS/S2_SR) for a **10-year period** defined by global variables `START_DATE` and `END_DATE`.
+   - Apply a cloud mask using the `QA60` band.
+   - Clip all images to the delimited study area.
+
+3. **Water Quality Indices:**
+   - Implement separate functions to compute:
+     - Chlorophyll-a (Chl-a): `Chl-a = 21 * (B8 / B4) - 5`
+     - Turbidity (TSS): `TSS = 228.1 * (B4 / (1 - (B4 / 0.1686))) + 1.18` (based on Nechad 2010)
+     - Secchi Disk depth (Zsd, water transparency): `Zsd = 8.24 * log(B3 / B2) + 10.6`
+   - All spectral variable calculations must include comments referencing the original formulas.
+
+4. **Outputs and Visualization:**
+   - Generate time series plots (averages over the study area) for each index.
+   - Export monthly mean results as both CSV and JSON, with all outputs saved in a local `/outputs/` folder.
+   - Use filenames in the format: `indices_boqueirao_STARTDATE_ENDDATE.csv`.
+   - Create an interactive Folium map showing mean values for a selected date.
+
+5. **Code Structure and Best Practices:**
+   - Organize code into clear functions: `mask_clouds`, `calc_mndwi_and_vectorize`, `calc_chla`, `calc_tss`, `calc_secchi`, `export_results`, `plot_timeseries`, `create_folium_map`.
+   - Follow Python best practices and add comments for each step.
+   - Add simple logging messages in the terminal (e.g., "Calculating MNDWI and vectorizing...", "Exporting CSV...").
+   - The code must be compatible with Python 3.11+.
+
+6. **README.md Generation:**
+   - After generating the script, also create a `README.md` file including:
+     - Project description.
+     - Installation instructions (Python dependencies and Earth Engine authentication).
+     - How to define `START_DATE` and `END_DATE`.
+     - How to run the script and visualize results.
+     - How to access generated files inside `/outputs/`.
+     - Example of how to use the raw.githubusercontent URL to connect CSV/JSON files directly to a web mapping platform.
+```

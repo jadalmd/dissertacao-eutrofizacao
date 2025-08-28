@@ -1,0 +1,50 @@
+# --- Python cache and compiled files ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Virtual environments ---
+.venv/
+env/
+venv/
+ENV/
+
+# --- Jupyter notebooks checkpoints ---
+.ipynb_checkpoints
+
+# --- System files ---
+.DS_Store
+Thumbs.db
+
+# --- Logs and temp files ---
+*.log
+*.tmp
+*.swp
+*.bak
+
+# --- Google Earth Engine auth and credentials ---
+# (important: don't expose your private GEE tokens!)
+.earthengine/
+*.json
+token*
+
+# --- Large data and temporary processing files ---
+*.tif
+*.tiff
+*.hdf
+*.h5
+*.nc
+*.jp2
+*.zip
+*.gz
+
+# --- Outputs ---
+# Keep CSV/JSON for results in /outputs/, but ignore heavy binaries
+outputs/*.png
+outputs/*.jpg
+outputs/*.pdf
+outputs/*.tif
+outputs/*.tiff
+
+# --- VS Code settings ---
+.vscode/

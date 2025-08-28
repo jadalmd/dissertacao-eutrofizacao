@@ -1,0 +1,16 @@
+# Earth Engine API
+earthengine-api==0.1.345
+
+# Manipulação e análise de dados
+pandas==2.1.1
+numpy==1.27.5
+
+# Visualização
+matplotlib==3.8.0
+seaborn==0.12.2
+folium==0.17.1
+plotly==5.16.1
+
+# Utilidades
+tqdm==4.67.2
+requests==2.31.0
