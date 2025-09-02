@@ -1,71 +1,59 @@
-# Water Quality Monitoring in Epitácio Pessoa Reservoir (Boqueirão, Paraíba, Brazil)
+# Water Quality and Legal Compliance Analysis in the Jaguaribe River Basin (João Pessoa-PB)
 
-## Project Description
-This project provides a robust Python script for monitoring water quality in the Epitácio Pessoa Reservoir using Google Earth Engine and Sentinel-2 satellite data. It calculates water quality indices (Chlorophyll-a, Turbidity, Secchi Disk depth), generates time series plots, exports results, and creates interactive maps for visualization.
+## Overview
+This project provides a fully automated, research-grade Python workflow for monitoring water quality in the Jaguaribe River Basin, João Pessoa, PB, Brazil. It uses Google Earth Engine (GEE) and Sentinel-2 satellite data to generate time-series analyses and assess compliance with Brazilian environmental legislation (CONAMA Resolution 357/2005, Class 2 rivers).
 
-## Installation Instructions
+## Installation
+1. Create a Conda environment:
+   ```bash
+   conda create -n jaguaribe-env python=3.10
+   conda activate jaguaribe-env
+   ```
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### 1. Python Version
-- Requires Python 3.11 or newer.
+## Usage
+1. Place the shapefile `jaguaribe_bacia.shp` (and associated files: .dbf, .shx, .prj) in the `data/` directory.
+2. Edit `src/main.py` to set your Google Cloud Project ID (`GCP_PROJECT`).
+3. Run the main script:
+   ```bash
+   python src/main.py
+   ```
+4. Outputs will be saved in the `outputs/` directory:
+   - `report_jaguaribe.csv`: Monthly water quality indices and compliance report
+   - `timeseries_jaguaribe.png`: Time series plot of indices and legal limits
+   - `map_jaguaribe.html`: Interactive map of the basin
 
-### 2. Required Libraries
-Install the following libraries in your Conda or virtual environment:
+## Methodology
+- **ROI Extraction:** Loads the Jaguaribe basin shapefile and converts it to a GEE geometry.
+- **Satellite Data:** Uses Sentinel-2 SR images from GEE, applies cloud/water masking (SCL and NDWI).
+- **Indices Calculated:**
+  - **Chlorophyll-a (Chl_a):** OC2 algorithm (Sentinel-2 adaptation)
+  - **Total Suspended Solids (TSS):** Nechad et al. (2010)
+  - **Turbidity:** Empirical model using band B4 (Red)
+- **Monthly Aggregation:** Computes monthly means for each index within the ROI.
+- **Legal Compliance:** Compares results to CONAMA 357/2005 Class 2 limits.
+- **Visualization:** Generates time series plots and an interactive folium map.
 
-```
-pip install earthengine-api pandas numpy matplotlib seaborn folium plotly tqdm requests
-```
+## Legal Framework
+- **Enquadramento:** Brazilian system for classifying water bodies by primary use.
+- **Class 2 Rivers (CONAMA 357/2005):**
+  - Chlorophyll-a ≤ 30 µg/L
+  - Turbidity ≤ 100 NTU
+  - (Other parameters can be added as needed)
 
-#### List of Required Libraries
-- earthengine-api
-- pandas
-- numpy
-- matplotlib
-- seaborn
-- folium
-- plotly
-- tqdm
-- requests
+## Outputs
+- `report_jaguaribe.csv`: Monthly indices and compliance flags
+- `timeseries_jaguaribe.png`: Time series plot with legal thresholds
+- `map_jaguaribe.html`: Interactive map of the basin
 
-### 3. Earth Engine Authentication
-Run the following command in your terminal to authenticate with Google Earth Engine:
-
-```
-python -c "import ee; ee.Authenticate()"
-```
-Follow the instructions to complete authentication.
-
-## How to Define START_DATE and END_DATE
-Edit the following lines in `src/main.py` to set your desired analysis period (default is 10 years):
-
-```python
-START_DATE = '2015-01-01'  # Change as needed
-END_DATE = '2024-12-31'    # Change as needed
-```
-
-## How to Run the Script
-1. Ensure all dependencies are installed and Earth Engine is authenticated.
-2. Run the script from the project root:
-
-```
-python src/main.py
-```
-
-## Visualizing Results
-- **Time Series Plots:** Saved as `outputs/timeseries_plot.png`.
-- **Monthly Mean Results:** Saved as CSV and JSON in the `outputs/` folder, e.g., `indices_boqueirao_2015-01-01_2024-12-31.csv`.
-- **Interactive Map:** HTML file for the first available date, e.g., `outputs/folium_map_YYYY-MM-DD.html`.
-
-## Accessing Generated Files
-All output files are saved in the `/outputs/` directory. You can open CSV/JSON files in Excel, GIS software, or web mapping platforms.
-
-## Example: Using Raw GitHub URLs for Web Mapping
-If your repository is public, you can use the raw file URLs to connect CSV/JSON files to web mapping platforms:
-
-```
-https://raw.githubusercontent.com/<username>/<repo>/main/outputs/indices_boqueirao_2015-01-01_2024-12-31.csv
-```
-Replace `<username>` and `<repo>` with your GitHub details.
+## References
+- CONAMA Resolution 357/2005: [Link](https://www.mma.gov.br/port/conama/legiabre.cfm?codlegi=459)
+- McFeeters, S. K. (1996). The use of the Normalized Difference Water Index (NDWI) in the delineation of open water features. International Journal of Remote Sensing, 17(7), 1425-1432.
+- Nechad, B., Ruddick, K., & Neukermans, G. (2010). Calibration and validation of a generic multisensor algorithm for mapping of turbidity in coastal waters. Remote Sensing of Environment, 114(4), 854-866.
+- Sentinel-2 User Guide: [Link](https://sentinel.esa.int/web/sentinel/user-guides/sentinel-2-msi)
 
 ---
-
-For questions or troubleshooting, please refer to the script comments and logging messages, or contact the project author.
+For questions or contributions, please contact the project maintainer.

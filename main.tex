@@ -1,0 +1,132 @@
+    % ===================================================================
+    % TEMPLATE LATEX - PROJETO DE DISSERTAÇÃO
+    % ===================================================================
+    \documentclass[12pt, a4paper]{article}
+
+    % --- PACOTES ---
+    \usepackage[utf8]{inputenc}
+    \usepackage[brazil]{babel}
+    \usepackage{geometry}
+    \usepackage{amsmath}
+    \usepackage{graphicx}
+    \usepackage[hidelinks]{hyperref}
+
+    \geometry{a4paper, top=3cm, bottom=2cm, left=3cm, right=2cm}
+    \linespread{1.5} % Espaçamento 1.5 entre linhas
+
+    \begin{document}
+
+    % Início da Seção de Metadados
+    % COopilot: Insira o BLOCO_METADADOS aqui.
+    \begin{titlepage}
+        \centering
+        \vspace*{0.5cm}
+        % Logo no topo da capa
+        \includegraphics[width=0.25\textwidth]{logo-ppgecam.jpeg}\\[0.2cm]
+        \vspace*{0.5cm}
+        \textbf{\small UNIVERSIDADE FEDERAL DA PARAÍBA \\
+        CENTRO DE TECNOLOGIA \\
+        PROGRAMA DE PÓS-GRADUAÇÃO EM ENGENHARIA CIVIL E AMBIENTAL}
+        \vspace{3cm}
+        
+        \textbf{\Huge Análise da Qualidade da Água e Conformidade com o Enquadramento Legal na Bacia do Rio Jaguaribe (João Pessoa-PB)}
+        \vspace{3cm}
+        
+        \textbf{\large Jaidna Dantas de Almeida}
+        \vfill
+        
+        \textbf{JOÃO PESSOA, PB \\ \today}
+    \end{titlepage}
+
+    \begin{center}
+        \textbf{Área de Concentração:} Recursos Hídricos e Saneamento Ambiental \\
+        \textbf{Linha de Pesquisa:} Planejamento, gestão, monitoramento e modelos matemáticos em recursos hídricos \\
+        \textbf{Orientador(a):} Prof. Dr. Gerald Norbert Souza da Silva \\
+        \textbf{Palavras-chave:} sensoriamento remoto, qualidade da água, enquadramento, CONAMA 357/2005, rio Jaguaribe, Google Earth Engine.
+    \end{center}
+    % Fim da Seção de Metadados
+
+    \newpage
+
+    % Início da Seção INTRODUÇÃO
+    \section*{1. INTRODUÇÃO}
+    A gestão de recursos hídricos em bacias hidrográficas urbanas representa um dos maiores desafios contemporâneos, dada a intensa pressão antrópica decorrente da ocupação desordenada, lançamento de efluentes e impermeabilização do solo. A bacia do rio Jaguaribe, localizada em João Pessoa (PB), é um exemplo emblemático deste cenário, sofrendo com a degradação progressiva da qualidade de suas águas. O "enquadramento", estabelecido pela Resolução CONAMA 357/2005, é o principal instrumento da Política Nacional de Recursos Hídricos para definir metas de qualidade para os corpos d'água. Contudo, a verificação da conformidade com essas metas exige um monitoramento contínuo e de alto custo. Diante disso, o sensoriamento remoto emerge como uma tecnologia estratégica, permitindo a análise da qualidade da água em larga escala e com alta frequência temporal. Este projeto propõe o desenvolvimento de uma metodologia totalmente automatizada, baseada em dados do satélite Sentinel-2 e na plataforma Google Earth Engine, para avaliar a conformidade da qualidade da água do rio Jaguaribe com os padrões de sua classe de enquadramento (Classe 2), gerando um diagnóstico robusto e de baixo custo para apoiar a gestão ambiental.
+    % Fim da Seção INTRODUÇÃO
+
+    % Início da Seção OBJETIVOS
+    \section*{2. OBJETIVOS}
+    \subsection*{Objetivo Geral}
+    Desenvolver e aplicar uma metodologia de sensoriamento remoto para monitorar a qualidade da água da bacia do rio Jaguaribe e avaliar sua conformidade com os padrões de enquadramento da Resolução CONAMA 357/2005 para rios de Classe 2.
+
+    \subsection*{Objetivos Específicos}
+   
+
+    \subsection{Índices de Qualidade da Água por Sensoriamento Remoto}
+    A estimativa de parâmetros de qualidade da água por sensoriamento remoto se baseia na resposta espectral da água. Para este projeto, serão utilizados os seguintes modelos:
+    \begin{itemize}
+        \item \textbf{Clorofila-a (Chl-a):} Estimada a partir de um modelo de duas bandas (Vermelho e Infravermelho Próximo), adaptado de Londe et al. (2013) para as bandas do Sentinel-2:
+        $$ Chl_a = 2.1171 + 1.68 \cdot \log_{10}\left(\frac{B_{8}}{B_{4}}\right) $$
+        \item \textbf{Sólidos Suspensos Totais (TSS):} Calculado com o modelo semi-analítico de Nechad et al. (2010), usando a banda do Vermelho (B4):
+        $$ TSS = \frac{A \cdot \rho_{Red}}{1 - (\rho_{Red} / C)} $$
+        Onde A e C são constantes empíricas (A=496.09, C=0.22).
+    \end{itemize}
+    % Fim da Seção FUNDAMENTAÇÃO TEÓRICA
+
+    % Início da Seção MATERIAIS E MÉTODOS
+    \section*{4. MATERIAIS E MÉTODOS}
+    \subsection{Área de Estudo}
+    A pesquisa será focada na bacia hidrográfica do rio Jaguaribe, um corpo hídrico urbano localizado integralmente no município de João Pessoa, Paraíba. A área de estudo será definida a partir de um arquivo shapefile vetorial.
+
+    \subsection{Fluxo de Trabalho Metodológico}
+    A metodologia será implementada em um script Python automatizado, seguindo as etapas:
+    \begin{enumerate}
+        \item \textbf{Definição da Área de Estudo:} Carregamento do shapefile da bacia e conversão para um objeto geométrico no Google Earth Engine.
+        \item \textbf{Processamento de Dados Sentinel-2:} Filtragem da coleção de imagens por data e local, seguida da aplicação de uma máscara de água robusta para isolar os pixels de interesse.
+        \item \textbf{Cálculo dos Indicadores:} Aplicação dos modelos matemáticos sobre as imagens para gerar mapas mensais de Clorofila-a e Turbidez.
+        \item \textbf{Análise de Conformidade Legal:} Extração dos valores médios mensais dos indicadores e comparação direta com os limites da CONAMA 357/2005 (Classe 2).
+        \item \textbf{Geração de Resultados:} Exportação dos dados em formato CSV e criação de produtos visuais (gráficos de série temporal e mapas de conformidade).
+    \end{enumerate}
+    % Fim da Seção MATERIAIS E MÉTODOS
+
+    % Início da Seção CRONOGRAMA
+    \section*{5. CRONOGRAMA}
+    \begin{table}[h!]
+    \centering
+    \caption{Cronograma de Execução da Dissertação.}
+    \begin{tabular}{|l|c|c|c|c|}
+    \hline
+    \textbf{Atividade / Semestre} & \textbf{1º Sem.} & \textbf{2º Sem.} & \textbf{3º Sem.} & \textbf{4º Sem.} \\ \hline
+    Revisão Bibliográfica & X & & & \\ \hline
+    Desenvolvimento do Script & X & X & & \\ \hline
+    Processamento e Análise de Dados & & X & X & \\ \hline
+    Redação de Artigo & & & X & \\ \hline
+    Redação Final da Dissertação & & & X & X \\ \hline
+    Defesa & & & & X \\ \hline
+    \end{tabular}
+    \end{table}
+    % Fim da Seção CRONOGRAMA
+
+    % Início da Seção RESULTADOS ESPERADOS
+    \section*{6. RESULTADOS ESPERADOS}
+    Espera-se como resultado principal um script Python funcional e de código aberto, capaz de realizar o monitoramento da qualidade da água e a análise de conformidade de forma automatizada. Adicionalmente, serão gerados um relatório de dados em formato CSV, gráficos de séries temporais e mapas temáticos que identifiquem os "hotspots" de não conformidade ao longo da bacia do rio Jaguaribe. A ferramenta desenvolvida terá o potencial de subsidiar a tomada de decisão por parte dos órgãos de gestão ambiental, oferecendo um diagnóstico rápido e de baixo custo sobre a saúde do rio.
+    % Fim da Seção RESULTADOS ESPERADOS
+
+    \newpage
+
+    % Início da Seção REFERÊNCIAS
+    \section*{7. REFERÊNCIAS}
+    \begin{thebibliography}{9}
+
+    \bibitem{conama357}
+    CONSELHO NACIONAL DO MEIO AMBIENTE (CONAMA). \textbf{Resolução nº 357, de 17 de março de 2005}. Dispõe sobre a classificação dos corpos de água e diretrizes ambientais para o seu enquadramento. Brasília, DF, 2005.
+
+    \bibitem{londe2013}
+    LONDE, L. D. R.; NOVO, E. M. L. de M.; BARBOSA, C. C. F.; ARAUJO, C. A. S. de; RENNÓ, C. D. Proposal for a remote sensing trophic state index based upon Thematic Mapper/Landsat images. \textit{Ambiente e Água}, v. 8, n. 3, p. 243-255, 2013.
+
+    \bibitem{nechad2010}
+    NECHAD, B.; RUDDICK, K. G.; PARK, Y. Calibration and validation of a generic multisensor algorithm for mapping of total suspended matter in turbid waters. \textit{Remote Sensing of Environment}, v. 114, n. 4, p. 854-866, 2010.
+
+    \end{thebibliography}
+    % Fim da Seção REFERÊNCIAS
+
+    \end{document}

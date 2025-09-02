@@ -1,127 +1,216 @@
-# Prompt Title: Python Script for Fully Automated Eutrophication Risk Assessment in the Epitácio Pessoa Reservoir (Boqueirão-PB)
+Prompt Title: High-Precision Python Script for Water Quality and Legal Compliance Analysis in the Jaguaribe River Basin (João Pessoa-PB)
 
-# Objective:
-# Generate a comprehensive, fully automated Python script for a Master's research project in Civil and Environmental Engineering. The script will use the Google Earth Engine (GEE) API to assess eutrophication risk in the Epitácio Pessoa Reservoir, Paraíba, Brazil. The script must be executable from the command line and require no manual intervention after initial setup. It should be modular, well-documented, and follow Python best practices.
+Objective:
+Generate a comprehensive, fully automated, and research-grade Python script for a Master's thesis in Civil and Environmental Engineering. The script's primary function is to perform a time-series analysis of water quality in the Jaguaribe River Basin, João Pessoa, PB, Brazil, using the Google Earth Engine (GEE) API and Sentinel-2 satellite data. A core component of the script will be to assess the basin's compliance with the Brazilian environmental legislation for water body classification ("enquadramento"), specifically the standards for Class 2 rivers as defined by CONAMA Resolution 357/2005. The entire workflow must be modular, reproducible, and require no manual intervention after the initial setup.
 
-# Scientific Context and Methodology:
-# The script will implement a workflow for monitoring water quality indicators relevant to eutrophication.
-# 1. Watershed Delineation: The study area will be automatically defined as the watershed of the Epitácio Pessoa Reservoir. This is a crucial step for hydrological and environmental analysis.
-# 2. Water Masking: Only water pixels will be analyzed. This prevents contamination from land, vegetation, and shadows, ensuring accurate index calculation.
-# 3. Water Quality Indices: Three key indices will be calculated to assess water quality:
-#    - NDCI (Normalized Difference Chlorophyll Index) as a proxy for Chlorophyll-a (Chl-a) concentration. Chl-a is a primary indicator of algal biomass and eutrophication.
-#    - TSS (Total Suspended Solids) to measure turbidity.
-#    - Zsd (Secchi Disk Depth) to estimate water transparency.
-# 4. Temporal Analysis and Export: The indices will be aggregated monthly to create a time series, which will be exported for further analysis and reporting.
-# 5. Visualization: The results will be visualized in a time series plot and an interactive map.
+Scientific and Legal Context:
+The Jaguaribe River is a critical urban water body in João Pessoa facing significant degradation. This project aims to create a remote sensing-based monitoring tool to support its management. The analysis will be framed by the "enquadramento" system, a legal instrument that classifies Brazilian water bodies according to their primary uses. The script will use the parameters for Class 2 rivers (destined for, among other things, human consumption after conventional treatment) as a benchmark to identify periods and areas of non-compliance, providing a scientifically robust tool for environmental diagnosis.
 
-# Instructions for Copilot Pro:
+Technical Specifications & Instructions for Copilot Pro
+1. Project Structure and Setup:
 
-# 1. Project Setup:
-#    - Create a file structure: `src/main.py`, `requirements.txt`, and `README.md`.
-#    - In `requirements.txt`, list the following dependencies: `earthengine-api`, `pandas`, `numpy`, `matplotlib`, `folium`, `geopandas`, `tqdm`, `eerepr`.
-#    - The script should be runnable with Python 3.10 and a Conda environment.
+Directory Structure: The script should assume and create the following structure:
 
-# 2. `src/main.py` Scripting Logic:
-#    - Import necessary libraries at the top: `ee`, `os`, `sys`, `pandas`, `geopandas`, `folium`, `matplotlib.pyplot`, `tqdm`.
-#    - Define global parameters. Important: These GEE-dependent variables must be defined *after* the `ee.Initialize()` call in the main function.
-#      - `START_DATE`: '2023-01-01'.
-#      - `END_DATE`: '2024-12-31'.
-#      - `GCP_PROJECT`: A placeholder for the user's Google Cloud Project ID.
-#      - `OUTPUT_DIR`: 'outputs'.
+/jaguaribe-analysis/
+|-- /data/
+|   |-- jaguaribe_bacia.shp  (and associated files like .dbf, .shx, .prj)
+|-- /outputs/
+|-- /src/
+|   |-- main.py
+|-- requirements.txt
+|-- README.md
+requirements.txt: Generate this file with the following dependencies:
 
-#    - Implement the following functions:
+earthengine-api
+pandas
+numpy
+matplotlib
+folium
+geopandas
+tqdm
+eerepr
+2. src/main.py Detailed Function Implementation:
 
-#    - `authenticate_ee(gcp_project)`:
-#      - Input: `gcp_project` (string).
-#      - Description: Handles GEE authentication and ensures the client library is initialized. It should be the first function called in the main execution block.
-#      - Method: Call `ee.Authenticate()` and `ee.Initialize(project=gcp_project)`. Include a `try...except` block to handle potential authentication errors.
+2.1. Global Parameters and Imports:
 
-#    - `delineate_watershed(poi)`:
-#      - Input: `poi` (ee.Geometry.Point).
-#      - Description: Automatically delineates the watershed.
-#      - Method: Use the SRTM Digital Elevation Data V4 (`USGS/SRTMGL1_003`). Apply `ee.Terrain.watershed()` centered at the `poi`.
-#      - Output: An `ee.Geometry.Polygon` representing the reservoir's watershed.
-#      - Logging: Print a message like "Delineating watershed for the study area..."
+Import all necessary libraries at the top of the script.
 
-#    - `mask_sentinel2_water(image)`:
-#      - Input: An `ee.Image` from the Sentinel-2 SR collection.
-#      - Description: Creates a robust water and cloud/shadow mask using the Scene Classification Layer (SCL) and the Normalized Difference Water Index (NDWI). This prevents contamination from land, clouds, and shadows.
-#      - Method:
-#        - SCL Mask: Create a mask from the `SCL` band. The mask should select pixels classified as 'water' (class 6). It must also mask out pixels classified as 'clouds' (classes 8 and 9), 'cloud shadows' (class 3), and 'snow/ice' (class 11).
-#        - NDWI Mask: Calculate NDWI using Sentinel-2 bands B3 (Green) and B8 (NIR) as per `(B3 - B8) / (B3 + B8)`. Apply a threshold (e.g., `ndwi > 0.1`).
-#        - Final Mask: Combine the SCL and NDWI masks to get the final, clean water-only layer.
-#      - Output: The input `ee.Image` with the final mask applied.
-#      - Reference: McFeeters, S. K. (1996). "The use of the Normalized Difference Water Index (NDWI) in the delineation of open water features." International Journal of Remote Sensing.
+Define global constants for file paths and configuration. These should be defined after ee.Initialize() if they depend on GEE objects.
 
-#    - `calculate_indices(image)`:
-#      - Input: A masked `ee.Image`.
-#      - Description: Calculates the water quality indices.
-#      - Formulas:
-#        - **NDCI (Normalized Difference Chlorophyll Index)**: `(B5 - B4) / (B5 + B4)`.
-#        - **TSS (Total Suspended Solids)**: `TSS = (496.09 * B4) / (1 - (B4 / 0.22))`. This formula is a simplification of the Nechad et al. (2010) model adapted for Sentinel-2 bands.
-#        - **Zsd (Secchi Disk Depth)**: `Zsd = 1.48 * (B2 / B3) + 0.12`.
-#      - Output: The `ee.Image` with new bands for each index (`ndci`, `tss`, `zsd`).
-#      - References:
-#        - NDCI: Mishra, S., & Mishra, D. R. (2012). "Normalized Difference Chlorophyll Index: A novel remote sensing approach to monitor inland chlorophyll dynamics." Remote Sensing of Environment.
-#        - TSS: Nechad, B., Ruddick, K., & Park, Y. (2010). "Calibration and validation of a generic multisensor algorithm for mapping of total suspended matter in turbid waters." Remote Sensing of Environment.
-#        - Zsd: Page, T., et al. (2019). "Satellite remote sensing of water clarity in inland waters: A validation of the use of Landsat 8 for the Water Framework Directive in the UK." Science of The Total Environment.
+GCP_PROJECT: A placeholder string for the user's Google Cloud Project ID.
 
-#    - `process_image_collection(start_date, end_date, roi)`:
-#      - Input: Date range (`start_date`, `end_date`), and ROI (`ee.Geometry`).
-#      - Description: Filters the Sentinel-2 collection, applies the water mask, calculates indices, and aggregates monthly.
-#      - Logic:
-#        - Load `COPERNICUS/S2_SR` collection.
-#        - Filter by date and bounds. Note: Cloud filtering is handled by the `mask_sentinel2_water` function.
-#        - Map the `mask_sentinel2_water` and `calculate_indices` functions over the collection.
-#        - Group the collection by month and apply a reducer (`ee.Reducer.mean()`) to each group.
-#      - Output: The final `ee.ImageCollection` with monthly mean index values.
-#      - Logging: Print progress messages like "Processing image collection..." and "Aggregating monthly data..."
+SHAPEFILE_PATH: '../data/jaguaribe_bacia.shp'.
 
-#    - `export_results(monthly_collection, roi, start_date, end_date)`:
-#      - Input: The monthly `ee.ImageCollection`, ROI, and date range.
-#      - Description: Exports the data to local files.
-#      - Logic:
-#        - Create the `outputs` directory if it doesn't exist.
-#        - Convert the monthly collection to a feature collection of points.
-#        - Export to a CSV file (`indices_boqueirao_<start>_<end>.csv`). The table should include `date`, `ndci`, `tss`, and `zsd`.
-#        - Export to a GeoJSON file (`indices_boqueirao_<start>_<end>.geojson`).
-#      - Output: Saved `.csv` and `.geojson` files in the `outputs` directory.
-#      - Logging: "Exporting data to CSV and GeoJSON..."
+OUTPUT_DIR: '../outputs'.
 
-#    - `create_visualizations(df, roi_polygon_local)`:
-#      - Input: The pandas DataFrame from the exported CSV and the local GeoJSON for the ROI.
-#      - Description: Generates time series plots and an interactive Folium map.
-#      - Logic:
-#        - **Time Series Plot**:
-#          - Use `matplotlib.pyplot` to create a figure with three subplots (one for each index: NDCI, TSS, Zsd).
-#          - Plot the monthly mean values over time.
-#          - Add titles, labels, and legends.
-#          - Save the plot as a PNG file (`outputs/timeseries_plot.png`).
-#        - **Folium Map**:
-#          - Initialize a `folium.Map` centered on the reservoir.
-#          - Add a base tile layer (e.g., OpenStreetMap or GEE's satellite imagery).
-#          - Use `folium.GeoJson` to add the reservoir polygon from the local GeoJSON file with a clear, styled border.
-#          - Add markers or a heatmap based on the NDCI values.
-#          - Save the map as an HTML file (`outputs/map_boqueirao.html`).
-#      - Output: Saved `.png` and `.html` files in the `outputs` directory.
-#      - Logging: "Generating visualizations..."
+START_DATE: '2023-01-01'.
 
-# 3. Main Script Execution:
-#    - Add the main execution block (`if __name__ == "__main__":`).
-#    - Within this block, the very first command must be a call to `authenticate_ee()`.
-#    - After authentication, define the GEE-dependent variables, such as `POI = ee.Geometry.Point(...)`.
-#    - Then, call the other functions in the correct order: `delineate_watershed`, `process_image_collection`, `export_results`, `create_visualizations`.
-#    - Wrap the calls in a `try...except` block for general error handling.
-#    - Use `tqdm` to show progress on the GEE aggregation process.
+END_DATE: '2025-09-01'.
 
-# 4. `README.md` Generation:
-#    - Create a detailed `README.md` file.
-#    - Section: "Project Overview" - brief description of the project goal and methodology.
-#    - Section: "Workflow Steps" - a numbered list outlining the automation steps (Authentication, Watershed Delineation, Water Masking, etc.).
-#    - Section: "Installation & Setup" - instructions for creating a Conda environment and installing dependencies from `requirements.txt`.
-#    - Section: "Usage Instructions" - how to run the script and what to expect.
-#    - Section: "Output Files" - a list and description of all output files.
-#    - Section: "Scientific Methodology & References" - a list of the scientific methods and a full list of citations for NDWI, NDCI, TSS, and Zsd. Ensure the references are properly formatted.
+2.2. Core Functions (in order of execution):
 
-# Final Code Style:
-# The generated code must be well-commented to explain each step, especially the GEE API calls and the index formulas. Use clear variable names and follow PEP 8 conventions. The script should be completely automated without any hardcoded paths that would prevent reproducibility on another machine.
+def authenticate_ee(gcp_project: str) -> None:
+
+Docstring: "Handles GEE authentication and initialization with a specific GCP project."
+
+Inputs: gcp_project (string).
+
+Process: Call ee.Authenticate() and ee.Initialize(project=gcp_project). Wrap in a try...except block to catch authentication errors and provide a clear message. Log success upon completion.
+
+def load_roi_from_shapefile(shapefile_path: str) -> ee.Geometry:
+
+Docstring: "Loads a shapefile from a local path, extracts its geometry, and converts it to a GEE Geometry object."
+
+Inputs: shapefile_path (string).
+
+Process:
+
+Use geopandas.read_file() to load the shapefile.
+
+Ensure the CRS is projected to WGS84 (EPSG:4326).
+
+Extract the geometry from the GeoDataFrame.
+
+Convert the GeoJSON representation of the geometry into an ee.Geometry object.
+
+Output: An ee.Geometry.Polygon representing the Jaguaribe basin.
+
+def get_conama_357_class2_limits() -> dict:
+
+Docstring: "Returns a dictionary with water quality limits for Class 2 rivers as per CONAMA Res. 357/2005."
+
+Inputs: None.
+
+Process: Return a hardcoded dictionary with a clear structure for each parameter, including the limit, unit, and the name of the corresponding calculated index.
+
+Output: A dictionary like:
+
+Python
+
+{
+    'Chlorophyll-a': {'limit': 30, 'unit': 'µg/L', 'index_name': 'Chl_a'},
+    'Turbidity': {'limit': 100, 'unit': 'NTU', 'index_name': 'Turbidity'}
+}
+def mask_sentinel2_water(image: ee.Image) -> ee.Image:
+
+Docstring: "Applies a cloud, shadow, and water mask to a Sentinel-2 SR image using SCL and NDWI."
+
+Inputs: An ee.Image from the COPERNICUS/S2_SR collection.
+
+Process:
+
+SCL Mask: Get the SCL band. Create a mask that retains only pixels classified as 'water' (class 6). Mask out 'cloud shadow' (class 3), 'cloud medium probability' (class 8), 'cloud high probability' (class 9), and 'cirrus' (class 10).
+
+NDWI Mask: Calculate NDWI using bands B3 (Green) and B8 (NIR) with the formula: (B3 - B8) / (B3 + B8). Create a mask for pixels where NDWI > 0.1.
+
+Combine Masks: Update the image mask by combining the SCL and NDWI masks to ensure only high-confidence water pixels are kept.
+
+Output: The input ee.Image with the final mask applied.
+
+Reference: Cite McFeeters, S. K. (1996) in the docstring.
+
+def calculate_indices(image: ee.Image) -> ee.Image:
+
+Docstring: "Calculates Chlorophyll-a, TSS, and Turbidity indices for a masked Sentinel-2 image."
+
+Inputs: A masked ee.Image.
+
+Process: Add new bands to the image for each calculated index. Use clear band names (Chl_a, TSS, Turbidity).
+
+Chlorophyll-a (Chl_a): Implement a validated two-band algorithm suitable for Sentinel-2, such as an adaptation of the OC2 algorithm. Rename the final band to 'Chl_a'.
+
+Total Suspended Solids (TSS): Implement the model from Nechad et al. (2010) using band B4 (Red). Rename the final band to 'TSS'.
+
+Turbidity: Implement an empirical model relating band B4 (Red) to Turbidity in NTU. Rename the final band to 'Turbidity'.
+
+Output: The ee.Image with the three new index bands.
+
+def generate_monthly_timeseries(roi: ee.Geometry, start_date: str, end_date: str) -> pd.DataFrame:
+
+Docstring: "Generates a monthly time series of mean water quality indices for a given ROI and date range."
+
+Inputs: roi, start_date, end_date.
+
+Process:
+
+Load the COPERNICUS/S2_SR collection and filter by bounds (roi) and date range.
+
+Map the mask_sentinel2_water and calculate_indices functions over the filtered collection.
+
+Generate a sequence of months between the start and end dates.
+
+Iterate through each month (using tqdm for a progress bar), filter the collection for that month, calculate the mean value of each index within the ROI using reducer.mean(), and store the result.
+
+Compile the monthly results into a pandas.DataFrame with columns: date, Chl_a, TSS, Turbidity.
+
+Output: A pandas.DataFrame containing the time series data.
+
+def check_legal_compliance(df: pd.DataFrame, limits: dict) -> pd.DataFrame:
+
+Docstring: "Compares time series data against CONAMA 357/2005 limits and adds compliance columns."
+
+Inputs: The time series pd.DataFrame and the limits dictionary.
+
+Process: Iterate through the limits dictionary. For each parameter (e.g., 'Chlorophyll-a'), create a new column in the DataFrame (e.g., 'Chl_a_compliant'). This column should contain a boolean value: True if the measured value is less than or equal to the limit, and False otherwise.
+
+Output: The input pd.DataFrame with additional compliance columns.
+
+def create_visualizations(df: pd.DataFrame, roi_path: str, limits: dict, output_dir: str) -> None:
+
+Docstring: "Generates and saves a time series plot and an interactive map of the results."
+
+Inputs: The final pd.DataFrame, the path to the ROI shapefile, the limits dictionary, and the output_dir.
+
+Process:
+
+Time Series Plot: Use matplotlib to create a figure with subplots for Chl-a and Turbidity. The x-axis should be the date. For each subplot, plot the time series data and add a horizontal dashed red line representing the CONAMA limit value from the limits dictionary. Add titles, labels, and a legend. Save the plot to f"{output_dir}/timeseries_jaguaribe.png".
+
+Folium Map: Create a folium.Map centered on João Pessoa. Add the Jaguaribe basin polygon from the shapefile as a folium.GeoJson layer. Add a title to the map. Save the map to f"{output_dir}/map_jaguaribe.html".
+
+3. Main Script Execution (if __name__ == "__main__":)
+
+Structure the main block to orchestrate the entire workflow.
+
+Use a main try...except block to catch any exceptions and log them.
+
+The execution order must be:
+
+authenticate_ee()
+
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+roi = load_roi_from_shapefile(SHAPEFILE_PATH)
+
+conama_limits = get_conama_357_class2_limits()
+
+ts_df = generate_monthly_timeseries(roi, START_DATE, END_DATE)
+
+ts_df_compliance = check_legal_compliance(ts_df, conama_limits)
+
+ts_df_compliance.to_csv(f"{OUTPUT_DIR}/report_jaguaribe.csv", index=False)
+
+create_visualizations(ts_df_compliance, SHAPEFILE_PATH, conama_limits, OUTPUT_DIR)
+
+Include clear logging messages (print() statements) before each major step.
+
+4. README.md Generation:
+
+Generate a README.md with the following sections:
+
+Project Title: "Water Quality and Legal Compliance Analysis in the Jaguaribe River Basin (João Pessoa-PB)"
+
+Overview: Describe the project's goal of using GEE and Sentinel-2 for automated monitoring and compliance checking against CONAMA 357/2005.
+
+Installation: Instructions for creating a Conda environment and installing requirements.txt.
+
+Usage: How to run src/main.py and where to place the jaguaribe_bacia.shp file.
+
+Methodology: Detail the workflow, including the specific water quality indices and their formulas.
+
+Legal Framework: Explain the "enquadramento" concept and the Class 2 limits from CONAMA 357/2005.
+
+Outputs: Describe the report_jaguaribe.csv, timeseries_jaguaribe.png, and map_jaguaribe.html files.
+
+References: List all scientific and legal sources cited.
+
+Final Instruction: The generated Python code must be exceptionally clean, modular, and use type hints. All scientific formulas and legal thresholds must be accompanied by comments citing their source. Ensure the script is fully reproducible.
