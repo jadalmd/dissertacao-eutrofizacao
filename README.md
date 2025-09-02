@@ -15,24 +15,35 @@ This project provides a fully automated, research-grade Python workflow for moni
    ```
 
 ## Usage
-1. Place the shapefile `jaguaribe_bacia.shp` (and associated files: .dbf, .shx, .prj) in the `data/` directory.
-2. Edit `src/main.py` to set your Google Cloud Project ID (`GCP_PROJECT`).
-3. Run the main script:
+1. Edit `src/main.py` to set your Google Cloud Project ID (`GCP_PROJECT`).
+2. Run the main script:
    ```bash
    python src/main.py
    ```
-4. Outputs will be saved in the `outputs/` directory:
+3. Outputs will be saved in the `outputs/` directory:
    - `report_jaguaribe.csv`: Monthly water quality indices and compliance report
    - `timeseries_jaguaribe.png`: Time series plot of indices and legal limits
    - `map_jaguaribe.html`: Interactive map of the basin
 
+## Ancillary File Generation
+To generate the requirements.txt and README.md files, use:
+```bash
+pip freeze > requirements.txt
+# Edit README.md as needed
+```
+
+
 ## Methodology
-- **ROI Extraction:** Loads the Jaguaribe basin shapefile and converts it to a GEE geometry.
+
+
+### Study Area Delineation
+The Region of Interest (ROI) for this study, corresponding to the Jaguaribe River watershed, is programmatically delineated using hydrological algorithms available within the Google Earth Engine platform. The delineation uses the ee.Algorithms.Hydro.watershed algorithm, based on an outlet point at the river's mouth (Latitude: -7.1436, Longitude: -34.8256), and the Shuttle Radar Topography Mission (SRTM) 30m Digital Elevation Model (DEM) data (USGS/SRTMGL1_003). This method was chosen for its scientific reproducibility and precision. The resulting polygon serves as the precise boundary for all subsequent analysis in this research.
+
 - **Satellite Data:** Uses Sentinel-2 SR images from GEE, applies cloud/water masking (SCL and NDWI).
 - **Indices Calculated:**
-  - **Chlorophyll-a (Chl_a):** OC2 algorithm (Sentinel-2 adaptation)
-  - **Total Suspended Solids (TSS):** Nechad et al. (2010)
-  - **Turbidity:** Empirical model using band B4 (Red)
+   - **Chlorophyll-a (Chl_a):** OC2 algorithm (Sentinel-2 adaptation)
+   - **Total Suspended Solids (TSS):** Nechad et al. (2010)
+   - **Turbidity:** Empirical model using band B4 (Red)
 - **Monthly Aggregation:** Computes monthly means for each index within the ROI.
 - **Legal Compliance:** Compares results to CONAMA 357/2005 Class 2 limits.
 - **Visualization:** Generates time series plots and an interactive folium map.
