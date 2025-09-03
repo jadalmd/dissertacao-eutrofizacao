@@ -1,7 +1,3 @@
-% ===================================================================
-% TEMPLATE LATEX - PROJETO DE DISSERTAÇÃO (VERSÃO REVISADA E MELHORADA)
-% Por: Orientador ABNTeX
-% ===================================================================
 \documentclass[12pt, a4paper]{article}
 
 % --- PACOTES ---
@@ -10,31 +6,29 @@
 \usepackage{geometry}
 \usepackage{amsmath}
 \usepackage{graphicx}
-\usepackage{booktabs} % Para tabelas de alta qualidade (sugestão)
-\usepackage[alf]{abntex2cite} % Pacote ABNT para citações (essencial)
+\usepackage{booktabs} % Para tabelas de alta qualidade
+\usepackage{indentfirst} % Para indentar o primeiro parágrafo
+\usepackage[alf]{abntex2cite} % Pacote ABNT para citações
 \usepackage[hidelinks]{hyperref}
 
 \geometry{a4paper, top=3cm, bottom=2cm, left=3cm, right=2cm} % Margens ABNT
 \linespread{1.5} % Espaçamento 1.5 entre linhas
 
-% Configurações do abntex2cite para o estilo autor-data
 \begin{document}
 \renewcommand{\bibname}{REFERÊNCIAS} % Renomeia a seção de bibliografia
 
-
-% Início da Seção de Metadados
+% --- INÍCIO DA SEÇÃO DE METADADOS ---
 \begin{titlepage}
     \centering
     \vspace*{0.5cm}
-    % Logo no topo da capa
     \includegraphics[width=0.25\textwidth]{logo-ppgecam.jpeg}\\[0.2cm]
     \vspace*{0.5cm}
     \textbf{\small UNIVERSIDADE FEDERAL DA PARAÍBA \\
     CENTRO DE TECNOLOGIA \\
-    PROGRAMA DE PÓS-GRADUAÇÃO EM ENGENHARIA CIVIL E AMBIENTAL}
+    PROGRAMA DE Pós-GRADUAÇÃO EM ENGENHARIA CIVIL E AMBIENTAL}
     \vspace{3cm}
     
-    \textbf{\Huge Análise da Qualidade da Água e Conformidade com o Enquadramento Legal na Bacia do Rio Jaguaribe (João Pessoa-PB)}
+    \textbf{\Huge Avaliação Multicritério do Risco Ambiental em Bacias Hidrográficas Urbanas com Sensoriamento Remoto e Google Earth Engine: Estudo de Caso do Rio Jaguaribe (PB)}
     \vspace{3cm}
     
     \textbf{\large Jaidna Dantas de Almeida}
@@ -47,131 +41,102 @@
     \textbf{Área de Concentração:} Recursos Hídricos e Saneamento Ambiental \\
     \textbf{Linha de Pesquisa:} Planejamento, gestão, monitoramento e modelos matemáticos em recursos hídricos \\
     \textbf{Orientador(a):} Prof. Dr. Gerald Norbert Souza da Silva \\
-    \textbf{Palavras-chave:} sensoriamento remoto, qualidade da água, enquadramento, rio Jaguaribe, Google Earth Engine.
+    \textbf{Palavras-chave:} sensoriamento remoto, índice de risco ambiental, plataforma web, Google Earth Engine, Rio Jaguaribe.
 \end{center}
-% Fim da Seção de Metadados
+% --- FIM DA SEÇÃO DE METADADOS ---
 
 \newpage
 
-% Início da Seção INTRODUÇÃO
+% --- INÍCIO DA SEÇÃO INTRODUÇÃO ---
 \section*{1. INTRODUÇÃO}
-A gestão de recursos hídricos em bacias hidrográficas urbanas representa um dos maiores desafios contemporâneos, sendo agravada pelos efeitos das mudanças climáticas e pela contínua pressão antrópica. A bacia do rio Jaguaribe, em João Pessoa (PB), é um exemplo emblemático deste cenário, sofrendo com a degradação progressiva da qualidade de suas águas, resultado de um processo de urbanização mal planejado \cite{santos2016}.
+A degradação de corpos hídricos urbanos é uma questão ambiental crítica no Brasil, exacerbada pelos desafios no monitoramento contínuo da qualidade da água \cite{santos2016}. Em resposta a essa lacuna, este projeto propõe uma metodologia escalável e automatizada para avaliar o risco ambiental em bacias urbanas, não apenas gerando dados, mas também democratizando seu acesso por meio de uma plataforma de monitoramento web.
 
-Este quadro de degradação vai na contramão das diretrizes estabelecidas em múltiplas esferas. Em nível nacional, a Política Nacional de Recursos Hídricos (PNRH), instituída pela Lei nº 9.433/97, preconiza o uso sustentável da água \cite{pnrh1997}. Em nível estadual, a Política Estadual de Recursos Hídricos, definida pela Lei nº 6.308/96, e orientada pelo Plano Estadual de Recursos Hídricos (PERH-PB), estabelece as bases para a gestão das águas na Paraíba \cite{paraiba1996, perhPB}. O principal instrumento para garantir a qualidade da água é o Enquadramento dos Corpos de Água, regulamentado pela Resolução CONAMA nº 357/2005, que define metas de qualidade a serem alcançadas \cite{conama357}.
+Integrando o Google Earth Engine (GEE) com imagens de satélite e dados socioeconômicos, esta pesquisa desenvolve um fluxo de trabalho reprodutível para o cálculo de um Índice de Risco Ambiental (IRA). O objetivo é criar e implementar um sistema que forneça \textit{insights} sistemáticos e atualizados para a gestão ambiental, em conformidade com a legislação brasileira \cite{conama357, pnrh1997}.
 
-Contudo, a fiscalização e o monitoramento da conformidade com essas metas legais, por métodos tradicionais de coleta \textit{in situ}, são processos de alto custo e baixa frequência \cite{moraes2023}. Diante disso, o sensoriamento remoto emerge como uma tecnologia estratégica, oferecendo dados com alta frequência temporal e baixo custo operacional \cite{moraes2023}. Este projeto propõe, assim, uma metodologia automatizada, via Google Earth Engine, para avaliar a conformidade da qualidade da água do rio Jaguaribe com os padrões de sua classe de enquadramento (Classe 2), gerando um diagnóstico robusto para apoiar uma gestão ambiental alinhada com a legislação vigente.
+Como prova de conceito, este estudo foca na Bacia do Rio Jaguaribe (PB), desenvolvendo uma ferramenta de apoio à decisão que traduz dados complexos de sensoriamento remoto em informações visuais e interativas, acessíveis a gestores e à sociedade.
+% --- FIM DA SEÇÃO INTRODUÇÃO ---
 
-% Fim da Seção INTRODUÇÃO
-
-% Início da Seção OBJETIVOS
+% --- INÍCIO DA SEÇÃO OBJETIVOS (ATUALIZADA) ---
 \section*{2. OBJETIVOS}
 \subsection*{Objetivo Geral}
-Desenvolver e aplicar uma metodologia de sensoriamento remoto para monitorar a qualidade da água da bacia do rio Jaguaribe e avaliar sua conformidade com os padrões de enquadramento da Resolução CONAMA 357/2005 para rios de Classe 2.
+Desenvolver e implementar uma metodologia de avaliação de risco ambiental, baseada em análise multicritério e sensoriamento remoto, culminando em uma **plataforma web de monitoramento dinâmico** para a bacia do Rio Jaguaribe.
 
 \subsection*{Objetivos Específicos}
 \begin{itemize}
-    \item Delinear programaticamente a bacia hidrográfica do Rio Jaguaribe a partir de seu exutório, utilizando algoritmos hidrológicos e um Modelo Digital de Elevação no Google Earth Engine.
-    \item Calcular indicadores de qualidade da água, como Clorofila-a e Sólidos Suspensos Totais (TSS), a partir de algoritmos de sensoriamento remoto validados cientificamente.
-    \item Gerar uma série temporal mensal dos indicadores para analisar a dinâmica da poluição no período.
-    \item Comparar sistematicamente os resultados com os limites legais estabelecidos pela CONAMA 357/2005.
-    \item Produzir mapas e gráficos que identifiquem os trechos e períodos de maior vulnerabilidade e não conformidade legal na bacia.
+    \item Desenvolver um fluxo de trabalho automatizado no Google Earth Engine para estimar mensalmente parâmetros de qualidade da água (Clorofila-a, Sólidos Suspensos Totais).
+    \item Integrar dados de pressão antrópica (densidade populacional e uso do solo) para contextualizar a degradação da qualidade da água.
+    \item Calcular um Índice de Risco Ambiental (IRA) mensal através de uma abordagem de Análise por Múltiplos Critérios (AMC).
+    \item **Aprimorar e implementar uma plataforma web** para a visualização interativa dos dados, permitindo a filtragem e a análise das séries temporais e espaciais do IRA e seus componentes.
+    \item Disponibilizar uma ferramenta de código aberto que sirva como um modelo replicável para o monitoramento de outras bacias urbanas.
 \end{itemize}
-% Fim da Seção OBJETIVOS
+% --- FIM DA SEÇÃO OBJETIVOS ---
 
-% Início da Seção FUNDAMENTAÇÃO TEÓRICA
+% --- INÍCIO DA SEÇÃO FUNDAMENTAÇÃO TEÓRICA ---
 \section*{3. FUNDAMENTAÇÃO TEÓRICA}
+% (Esta seção permanece a mesma da versão anterior)
+\subsection{Análise por Múltiplos Critérios (AMC) para Risco Ambiental}
+A Análise por Múltiplos Critérios é uma ferramenta de apoio à decisão que permite a avaliação de problemas complexos que envolvem múltiplos fatores. Neste projeto, a AMC é utilizada para integrar diferentes fontes de risco ambiental em um único indicador sintético, o Índice de Risco Ambiental (IRA). A abordagem consiste na combinação ponderada de critérios normalizados.
 
-\subsection{Enquadramento de Corpos Hídricos e a Legislação Brasileira}
-O Enquadramento dos Corpos de Água é um instrumento da Política Nacional de Recursos Hídricos (Lei nº 9.433/97) que estabelece metas de qualidade a serem alcançadas ou mantidas em um corpo de água, de acordo com seus usos preponderantes. A Resolução do Conselho Nacional do Meio Ambiente (CONAMA) nº 357/2005 dispõe sobre a classificação e diretrizes ambientais para o enquadramento. Para rios de \textbf{Classe 2}, como é o caso do enquadramento do Rio Jaguaribe, destinados, entre outros, ao abastecimento para consumo humano após tratamento convencional, os principais limites de referência para este trabalho são[cite: 305]:
-\begin{itemize}
-    \item \textbf{Clorofila-a:} $\leq 30 \, \mu g/L$
-    \item \textbf{Turbidez:} $\leq 100$ NTU (Unidade Nefelométrica de Turbidez)
-\end{itemize}
+O IRA é um índice composto, calculado mensalmente, com a seguinte fórmula geral:
+\begin{equation}
+    \text{IRA} = (0.5 \times C_{QA}) + (0.3 \times C_{Pop}) + (0.2 \times C_{UCS})
+\end{equation}
+Onde cada critério representa: $C_{QA}$ (Qualidade da Água), $C_{Pop}$ (Pressão Populacional) e $C_{UCS}$ (Risco por Uso do Solo).
+% --- FIM DA SEÇÃO FUNDAMENTAÇÃO TEÓRICA ---
 
-\subsection{Índices de Qualidade da Água por Sensoriamento Remoto}
-A estimativa de parâmetros de qualidade da água por sensoriamento remoto se baseia na resposta espectral da água, que é captada pelos sensores dos satélites. A contaminação por nutrientes, como nitrogênio e fósforo, pode levar à eutrofização, cujo primeiro sintoma é o aumento da biomassa algal, resultando no aparecimento de clorofila-a, um pigmento fotossintético indicador da degradação[cite: 206]. Para este projeto, serão utilizados os seguintes modelos:
-
-\begin{itemize}
-    \item \textbf{Clorofila-a (Chl-a):} A concentração de Clorofila-a, um indicador primário de biomassa algal e estado de eutrofização, será estimada a partir de um modelo de duas bandas. A equação a ser utilizada foi proposta e validada por \cite{londe2013} e adaptada para as bandas do sensor MSI do satélite Sentinel-2, conforme aplicado por \cite{moraes2023}:
-    \begin{equation}
-      Chl_a = 2.1171 + 1.68 \cdot \log_{10}\left(\frac{B_{8}}{B_{4}}\right)
-    \end{equation}
-    Onde:
-    \begin{itemize}
-        \item $Chl_a$ é a concentração de Clorofila-a em $\mu g/L$.
-        \item $B_{8}$ é a refletância de superfície na banda do Infravermelho Próximo (NIR), correspondente à banda 8 do Sentinel-2[cite: 283].
-        \item $B_{4}$ é a refletância de superfície na banda do Vermelho (Red), correspondente à banda 4 do Sentinel-2[cite: 283].
-    \end{itemize}
-
-    \item \textbf{Sólidos Suspensos Totais (TSS):} O TSS, que afeta diretamente a turbidez da água, será calculado com o modelo semi-analítico de \cite{nechad2010}. Este modelo é genérico e amplamente validado para diversos sensores e corpos d'água:
-    \begin{equation}
-     TSS = \frac{A \cdot \rho_{w}(\lambda_{Red})}{1 - (\rho_{w}(\lambda_{Red}) / C)} + B
-    \end{equation}
-    Para simplificação e aplicação direta, a constante B pode ser desconsiderada, resultando na forma:
-    $$ TSS = \frac{A \cdot \rho_{Red}}{1 - (\rho_{Red} / C)} $$
-    Onde:
-    \begin{itemize}
-        \item $TSS$ é a concentração de Sólidos Suspensos Totais em $g/m^3$ ou $mg/L$.
-        \item $\rho_{Red}$ é a refletância da superfície da água na banda do Vermelho (Banda 4 do Sentinel-2).
-        \item A e C são constantes empíricas calibradas para o sensor. Para o sensor MSI (Sentinel-2), os valores de referência são A=355.85 $g/m^3$ e C=0.1728.
-    \end{itemize}
-\end{itemize}
-% Fim da Seção FUNDAMENTAÇÃO TEÓRICA
-
-% Início da Seção MATERIAIS E MÉTODOS
+% --- INÍCIO DA SEÇÃO MATERIAIS E MÉTODOS (ATUALIZADA) ---
 \section*{4. MATERIAIS E MÉTODOS}
-
 \subsection{Área de Estudo}
-A pesquisa foca na bacia hidrográfica do rio Jaguaribe, um corpo hídrico que se desenvolve desde sua nascente até a foz inteiramente dentro da zona urbana do município de João Pessoa, Paraíba[cite: 36]. A área de estudo será definida de forma programática, garantindo alta precisão e reprodutibilidade. O polígono da bacia será gerado a partir do seu exutório na foz (Latitude: -7.1436, Longitude: -34.8256), utilizando como base o Modelo Digital de Elevação SRTM (Shuttle Radar Topography Mission).
+A Bacia do Rio Jaguaribe, localizada integralmente no perímetro urbano de João Pessoa (PB) \cite{santos2016}.
 
 \subsection{Fontes de Dados}
 \begin{itemize}
-    \item \textbf{Imagens de Satélite:} Serão utilizadas imagens do satélite Sentinel-2 (sensor MSI), Nível de processamento 2A (reflectância de superfície), disponíveis na plataforma Google Earth Engine. Este nível de processamento é crucial, pois já fornece dados com correção atmosférica.
-    \item \textbf{Modelo Digital de Elevação (MDE):} Para o delineamento da bacia, será utilizado o MDE SRTM de 30 metros de resolução espacial (produto USGS/SRTMGL1\_003).
-    \item \textbf{Padrões Legais:} As Resoluções CONAMA nº 357/2005 e nº 430/2011 servirão como base para a análise de conformidade.
+    \item \textbf{Imagens Primárias:} Sentinel-2 MSI (Nível-2A).
+    \item \textbf{Dados de Apoio:} Densidade Populacional (WorldPop \cite{worldpop2020}), Uso do Solo (MapBiomas \cite{mapbiomas2021}), e Modelo Digital de Elevação (SRTM).
 \end{itemize}
 
-\subsection{Fluxo de Trabalho Metodológico}
-A metodologia será implementada em um script Python automatizado na plataforma Google Earth Engine (GEE), seguindo as etapas detalhadas abaixo, garantindo um processo fidedigno e replicável:
+\subsection{Fluxo Metodológico}
+O fluxo de trabalho combina o processamento de dados geoespaciais com o desenvolvimento de software.
 \begin{enumerate}
-    \item \textbf{Delineamento da Bacia Hidrográfica:} Geração automática do polígono da bacia a partir do ponto de exutório definido, usando os algoritmos de hidrologia do GEE sobre o MDE SRTM.
-    \item \textbf{Processamento de Dados Sentinel-2:} Filtragem da coleção de imagens por data (período de análise) e local (polígono da bacia). Será aplicada uma máscara de nuvens para remover pixels contaminados. Em seguida, será aplicada uma máscara de água robusta para isolar os pixels de interesse, utilizando a camada de classificação de cena (SCL) e o Índice de Água por Diferença Normalizada (NDWI).
-    \item \textbf{Cálculo dos Indicadores:} Aplicação dos modelos matemáticos (Equações 1 e 2) sobre as imagens pré-processadas para gerar mapas mensais de Clorofila-a e Sólidos Suspensos Totais. A Turbidez será inferida a partir da forte correlação com o TSS.
-    \item \textbf{Análise de Conformidade Legal:} Extração dos valores médios mensais dos indicadores para toda a área fluvial da bacia. Esses valores serão comparados diretamente com os limites estabelecidos pela CONAMA 357/2005 para rios de Classe 2.
-    \item \textbf{Geração de Resultados:} Exportação dos dados agregados em formato CSV para análises estatísticas e criação de produtos visuais, como gráficos de série temporal e mapas de conformidade, que destacarão os trechos do rio e os períodos que violam os padrões legais.
+    \item \textbf{Backend (Processamento de Dados):} Um script Python no GEE executa a aquisição, o pré-processamento (máscaras de nuvem e água \cite{mcfeeters1996}), o cálculo dos indicadores \cite{londe2013, nechad2010} e a aplicação da fórmula do IRA (Equação 1). Os resultados são agregados mensalmente e exportados como um arquivo CSV.
+    \item \textbf{Frontend (Plataforma Web):} Uma aplicação web, já em desenvolvimento básico e hospedada na Netlify, é responsável por consumir os dados gerados. A plataforma permitirá a visualização dos dados através de camadas interativas em um mapa, gráficos de séries temporais e a aplicação de filtros (ex: por período ou por nível de risco). As tecnologias incluem HTML, CSS e JavaScript.
 \end{enumerate}
-% Fim da Seção MATERIAIS E MÉTODOS
+% --- FIM DA SEÇÃO MATERIAIS E MÉTODOS ---
 
-% Início da Seção CRONOGRAMA
+% --- INÍCIO DA SEÇÃO CRONOGRAMA (ATUALIZADA) ---
 \section*{5. CRONOGRAMA}
 \begin{table}[h!]
 \centering
-\caption{Cronograma de Execução da Dissertação.}
+\caption{Cronograma de Execução (6 Meses).}
 \label{tab:cronograma}
-\begin{tabular}{lcccc}
+\begin{tabular}{ll}
 \toprule
-\textbf{Atividade / Semestre} & \textbf{1º Sem.} & \textbf{2º Sem.} & \textbf{3º Sem.} & \textbf{4º Sem.} \\ 
+\textbf{Mês(es)} & \textbf{Atividade Principal} \\ 
 \midrule
-Revisão Bibliográfica & X & & & \\
-Desenvolvimento do Script GEE & X & X & & \\
-Processamento e Análise de Dados & & X & X & \\
-Redação de Artigo & & & X & \\
-Redação Final da Dissertação & & & X & X \\
-Defesa & & & & X \\
+1-2 & Revisão Bibliográfica, Desenvolvimento do Script GEE e da Estrutura Base da Plataforma Web \\
+3-4 & Finalização do Script, Processamento dos Dados e **Aprimoramento da Plataforma Web** \\
+    & (Implementação dos filtros, gráficos dinâmicos e integração final dos dados) \\
+5   & Análise Crítica dos Resultados e Redação do Artigo/Relatório Final \\
+6   & Revisão, Submissão e Preparação para Apresentação/Defesa do Trabalho \\
 \bottomrule
 \end{tabular}
 \end{table}
-% Fim da Seção CRONOGRAMA
+% --- FIM DA SEÇÃO CRONOGRAMA ---
 
-% Início da Seção RESULTADOS ESPERADOS
-\section*{6. RESULTADOS ESPERADOS}
-Espera-se como resultado principal um script Python funcional e de código aberto, capaz de realizar o monitoramento da qualidade da água e a análise de conformidade de forma automatizada na plataforma Google Earth Engine. Adicionalmente, serão gerados um relatório de dados em formato CSV, gráficos de séries temporais e mapas temáticos que identifiquem os "hotspots" de não conformidade ao longo da bacia do rio Jaguaribe. A ferramenta desenvolvida terá o potencial de subsidiar a tomada de decisão por parte dos órgãos de gestão ambiental, oferecendo um diagnóstico rápido, de baixo custo e com fundamentação científica sobre a saúde do rio.
-% Fim da Seção RESULTADOS ESPERADOS
+% --- INÍCIO DA SEÇÃO RESULTADOS ESPERADOS (ATUALIZADA) ---
+\section*{6. RESULTADOS ESPERADOS E PRODUTOS GERADOS}
+O principal resultado esperado é uma *plataforma web de monitoramento ambiental* (\url{https://mapeamento-risco.netlify.app/}), funcional e de acesso público, que sirva como uma ferramenta de apoio à decisão para a Bacia do Rio Jaguaribe. A plataforma consolidará os seguintes produtos:
+\begin{itemize}
+    \item Um **sistema de visualização geoespacial** com camadas interativas para o IRA, Clorofila-a, SST, e dados de pressão antrópica.
+    \item **Gráficos dinâmicos** que permitirão a análise de séries temporais e a comparação com os limites legais da legislação ambiental.
+    \item A metodologia e o código-fonte (backend e frontend) disponibilizados em repositório aberto, garantindo a replicabilidade da pesquisa.
+\end{itemize}
+% --- FIM DA SEÇÃO RESULTADOS ESPERADOS ---
 
 \newpage
 
-% Início da Seção REFERÊNCIAS
+% --- INÍCIO DA SEÇÃO REFERÊNCIAS ---
 \bibliographystyle{abntex2-alf}
-\bibliography{referencias} % Este comando chama o arquivo 'referencias.bib'
+\bibliography{referencias} 
 
 \end{document}
