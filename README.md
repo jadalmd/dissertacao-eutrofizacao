@@ -1,4 +1,4 @@
-# Automated Water Quality and Environmental Risk Assessment using Remote Sensing and Google Earth Engine
+# Multi-Criteria Environmental Risk Assessment in Urban Watersheds using Remote Sensing and Google Earth Engine: A Case Study of the Jaguaribe River (PB)
 
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 
@@ -31,28 +31,30 @@ This context makes the Jaguaribe River an ideal candidate for testing and valida
 
 ## 4. Methodology
 
-The workflow is executed entirely within a Python environment, leveraging the Google Earth Engine API for cloud-based geospatial processing.
+The workflow is executed entirely within a Python environment, leveraging the Google Earth Engine API for cloud-based geospatial processing. The methodology is based on a Multi-Criteria Analysis (MCA) to produce a monthly Environmental Risk Index (ERI).
 
 #### 4.1. Data Acquisition and Preprocessing
-* **Satellite Platform:** Sentinel-2 MSI (Level-2A Surface Reflectance).
-* **Temporal Range:** 2018 to present.
-* **Cloud Masking:** Images are filtered using the Sentinel-2 Scene Classification Layer (SCL) to remove pixels corresponding to clouds, cloud shadows, and other artifacts.
-* **Water Body Masking:** A dynamic water mask is generated using the Normalized Difference Water Index (NDWI) to ensure that analysis is restricted to water surfaces.
-    * $NDWI = \frac{(Green - NIR)}{(Green + NIR)}$
+* **Primary Imagery:** Sentinel-2 MSI (Level-2A Surface Reflectance) is used for water quality analysis.
+* **Supporting Datasets:**
+    * **Population Density:** WorldPop Global Project Population Data provides estimates of inhabitants per square kilometer.
+    * **Land Use:** MapBiomas Brasil Land Cover Collection offers detailed annual land use and land cover classifications for Brazil.
+* **Image Processing:** All satellite data is filtered for the desired time and region. A standard cloud mask (using Sentinel-2's SCL band) and a dynamic water mask (using NDWI) are applied to ensure data quality [4].
 
-#### 4.2. Water Quality Parameter Estimation
-The following indices are calculated for each valid satellite image:
-* [cite_start]**Chlorophyll-a ($Chl_a$):** An indicator of phytoplankton biomass and eutrophication[cite: 458]. Estimated using an adaptation of the OC2 algorithm for Sentinel-2 bands.
-* **Total Suspended Solids (TSS):** Measures the total amount of solid material suspended in the water, affecting clarity. Calculated using the semi-empirical model proposed by Nechad et al. (2010).
-* **Turbidity:** A measure of water cloudiness or haziness. Estimated using an empirical model based on the reflectance of the Red band (B4).
+#### 4.2. Multi-Criteria Environmental Risk Index (ERI)
+The ERI is a composite index calculated monthly, combining normalized scores from three different criteria, each assigned a weight reflecting its relative importance [1, 7]. The formula is:
 
-#### 4.3. Legal and Environmental Framework (Enquadramento)
-The results are evaluated against the standards set by **CONAMA Resolution 357/2005** for **Class 2 freshwater bodies**, which is the classification applicable to the Jaguaribe River. The key thresholds used for this analysis are:
-* [cite_start]**Chlorophyll-a:** $\le 30 \ \mu g/L$ [cite: 557]
-* **Turbidity:** $\le 100 \ NTU$ (Nephelometric Turbidity Units)
+$ERI = (0.5 \times C_{WQ}) + (0.3 \times C_{Pop}) + (0.2 \times C_{LU})$
 
-#### 4.4. Temporal Analysis and Aggregation
-The script aggregates the pixel values within the delineated watershed for each date and calculates the monthly mean for each water quality parameter. A compliance flag is generated for each month, indicating whether the parameters are within the legal limits.
+The criteria are defined as:
+
+1.  **Water Quality Degradation ($C_{WQ}$):** A direct impact score based on the number of water quality parameters (Chlorophyll-a, TSS, Turbidity) that exceed the legal limits defined by **CONAMA Resolution 357/2005 for Class 2 waters** [2, 5, 6]. The score ranges from 0 (no parameters exceeded) to 1 (all parameters exceeded).
+
+2.  **Anthropic Pressure from Population ($C_{Pop}$):** A pressure score derived from the mean population density within the watershed. This acts as a proxy for the potential load of untreated domestic sewage and diffuse pollution.
+
+3.  **Land Use Risk ($C_{LU}$):** A potential risk score based on land cover classification. Land uses like urban areas and agriculture are assigned higher risk values than forests and wetlands, representing the potential for non-point source pollution via surface runoff.
+
+#### 4.3. Temporal Analysis and Aggregation
+The script aggregates all data on a monthly basis to calculate the final ERI and classifies it into four levels: **Low, Medium, High, and Very High Risk.**
 
 ## 5. Technologies & Tools
 * **Programming Language:** Python 3.10
@@ -108,10 +110,11 @@ The script produces the following files in the `outputs/` directory:
 
 ## 8. Future Work
 This project serves as a foundation for a broader research initiative. Future development will focus on:
-* **Scientific Validation:** Correlating satellite-derived estimates with *in-situ* water quality measurements.
-* **Advanced Risk Modeling:** Developing a multi-criteria environmental risk index that incorporates additional variables (e.g., land use, population density, pollution sources).
+* **Scientific Validation:** Correlating satellite-derived estimates and the final ERI with *in-situ* water quality and ecological measurements.
+* **Sensitivity Analysis:** Testing the impact of different weighting schemes in the ERI formula to understand model uncertainties.
+* **Machine Learning Integration:** Using historical data to train models that can predict future risk scenarios based on climate and land-use change projections.
 * **Expansion to Other Basins:** Applying and adapting the methodology to monitor other critical watersheds in Brazil.
-* **Web Application:** Creating an interactive web-based dashboard for visualizing results and allowing non-technical users to explore the data.
+* **Dynamic Web Application:** Creating an interactive web-based dashboard for visualizing results and allowing non-technical users to explore the data and risk factors.
 
 ## 9. References
 * CONAMA Resolution 357/2005. *Dispõe sobre a classificação dos corpos de água e diretrizes ambientais para o seu enquadramento*.
