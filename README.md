@@ -20,12 +20,12 @@ As an initial application and proof-of-concept, this study focuses on the **Jagu
 
 ## 3. Case Study: Jaguaribe River Basin, João Pessoa (PB)
 
-The Jaguaribe River Basin was selected as the initial study area due to its ecological significance and the intense environmental impacts it suffers. [cite_start]The basin is entirely located within the urban perimeter of João Pessoa, making it highly vulnerable to anthropogenic pressures[cite: 36].
+The Jaguaribe River Basin was selected as the initial study area due to its ecological significance and the intense environmental impacts it suffers. The basin is entirely located within the urban perimeter of João Pessoa, making it highly vulnerable to anthropogenic pressures.
 
 Key documented issues include:
-* [cite_start]Disorderly urban occupation, leading to the removal of riparian vegetation and landfilling of banks[cite: 12, 113].
-* [cite_start]Pollution from domestic sewage and solid waste disposal, contributing to eutrophication and degradation of water quality[cite: 112, 114, 125, 127].
-* [cite_start]Increased soil impermeabilization, which intensifies surface runoff, erosion, and the silting of the river channel[cite: 71, 74, 77].
+* Disorderly urban occupation, leading to the removal of riparian vegetation and landfilling of banks.
+* Pollution from domestic sewage and solid waste disposal, contributing to eutrophication and degradation of water quality.
+* Increased soil impermeabilization, which intensifies surface runoff, erosion, and the silting of the river channel.
 
 This context makes the Jaguaribe River an ideal candidate for testing and validating the automated monitoring methodology developed in this project.
 
@@ -41,13 +41,13 @@ The workflow is executed entirely within a Python environment, leveraging the Go
 * **Image Processing:** All satellite data is filtered for the desired time and region. A standard cloud mask (using Sentinel-2's SCL band) and a dynamic water mask (using NDWI) are applied to ensure data quality [4].
 
 #### 4.2. Multi-Criteria Environmental Risk Index (ERI)
-The ERI is a composite index calculated monthly, combining normalized scores from three different criteria, each assigned a weight reflecting its relative importance [1, 7]. The formula is:
+The ERI is a composite index calculated monthly, combining normalized scores from three different criteria, each assigned a weight reflecting its relative importance. The formula is:
 
 $ERI = (0.5 \times C_{WQ}) + (0.3 \times C_{Pop}) + (0.2 \times C_{LU})$
 
 The criteria are defined as:
 
-1.  **Water Quality Degradation ($C_{WQ}$):** A direct impact score based on the number of water quality parameters (Chlorophyll-a, TSS, Turbidity) that exceed the legal limits defined by **CONAMA Resolution 357/2005 for Class 2 waters** [2, 5, 6]. The score ranges from 0 (no parameters exceeded) to 1 (all parameters exceeded).
+1.  **Water Quality Degradation ($C_{WQ}$):** A direct impact score based on the number of water quality parameters (Chlorophyll-a, TSS, Turbidity) that exceed the legal limits defined by **CONAMA Resolution 357/2005 for Class 2 waters** . The score ranges from 0 (no parameters exceeded) to 1 (all parameters exceeded).
 
 2.  **Anthropic Pressure from Population ($C_{Pop}$):** A pressure score derived from the mean population density within the watershed. This acts as a proxy for the potential load of untreated domestic sewage and diffuse pollution.
 
