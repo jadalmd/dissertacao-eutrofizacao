@@ -89,6 +89,7 @@ def calculate_indices(image: ee.Image) -> ee.Image:
 
     return image.addBands([chl_a, tss, turbidity, tsi])
 
+
 def generate_monthly_timeseries(roi: ee.Geometry, start_date: str, end_date: str) -> pd.DataFrame:
     """
     Gera uma série temporal mensal de forma eficiente, usando mapeamento no lado do servidor.
@@ -146,6 +147,49 @@ def generate_monthly_timeseries(roi: ee.Geometry, start_date: str, end_date: str
     logging.info("Série temporal gerada com sucesso.")
     return df
 
+# =================== FUNÇÕES ERI E CRITÉRIOS ===================
+def get_population_density(roi):
+    """Calcula a densidade populacional média na ROI usando WorldPop."""
+    pop_img = ee.ImageCollection('WORLDPOP/GP/100m/pop').sort('system:time_start', False).first()
+    pop_img = pop_img.clip(roi)
+    stats = pop_img.reduceRegion(
+        reducer=ee.Reducer.mean(),
+        geometry=roi,
+        scale=100,
+        maxPixels=1e9
+    )
+    try:
+        mean_pop = stats.getInfo()['population']
+    except Exception:
+        mean_pop = None
+    return mean_pop
+
+def get_land_use_risk(roi):
+    """Calcula o score de risco de uso do solo usando MapBiomas."""
+    mb_img = ee.ImageCollection('projects/mapbiomas-workspace/public/collection7/mapbiomas-collection70-brazil').sort('year', False).first()
+    mb_img = mb_img.clip(roi)
+    # Reclassificação
+    high_risk = mb_img.remap([24, 30], [1, 1], 0)
+    medium_risk = mb_img.remap([15, 21], [1, 1], 0)
+    area_img = ee.Image.pixelArea()
+    high_area = high_risk.multiply(area_img).reduceRegion(ee.Reducer.sum(), roi, 30, 1e9).getInfo()
+    med_area = medium_risk.multiply(area_img).reduceRegion(ee.Reducer.sum(), roi, 30, 1e9).getInfo()
+    total_area = area_img.reduceRegion(ee.Reducer.sum(), roi, 30, 1e9).getInfo()
+    h = sum(high_area.values()) if high_area else 0
+    m = sum(med_area.values()) if med_area else 0
+    t = sum(total_area.values()) if total_area else 1
+    score = (h * 1.0 + m * 0.5) / t
+    return score
+
+def classify_eri(eri):
+    if eri <= 0.25:
+        return 'Low Risk'
+    elif eri <= 0.5:
+        return 'Medium Risk'
+    elif eri <= 0.75:
+        return 'High Risk'
+    else:
+        return 'Very High Risk'
 
 def main():
     """Função principal que orquestra todo o fluxo de trabalho."""
@@ -162,22 +206,49 @@ def main():
         # 2. GERAÇÃO DA SÉRIE TEMPORAL
         df = generate_monthly_timeseries(study_area, START_DATE, END_DATE)
 
-        # 3. PÓS-PROCESSAMENTO E EXPORTAÇÃO
+        # 3. ERI MENSAL E EXPORTAÇÃO
         if df.empty:
             logging.warning("Nenhum dado foi retornado da análise. Verifique o período e a área de estudo.")
             return
-            
+
         df = df.dropna(subset=['Chl_a', 'TSS', 'Turbidity', 'TSI'])
         if df.empty:
             logging.warning("Dados retornados não continham valores válidos para os índices.")
             return
 
         os.makedirs(OUTPUT_DIR, exist_ok=True)
-        csv_path = os.path.join(OUTPUT_DIR, f'analise_jaguaribe_{START_DATE}_a_{END_DATE}.csv')
-        df.to_csv(csv_path, index=False)
-        logging.info(f"Resultados exportados para: {csv_path}")
+        results = []
+        for idx, row in df.iterrows():
+            # Critério 1: Water Quality
+            exceed_count = int(row['Chl_a'] > 30) + int(row['Turbidity'] > 100) + int(row['TSS'] > 100)
+            C_wq = exceed_count / 3.0
 
-        # 4. VISUALIZAÇÕES (Placeholder - podem ser adicionadas aqui depois)
+            # Critério 2: População
+            mean_pop = get_population_density(study_area)
+            C_pop = min(mean_pop / 5000.0, 1.0) if mean_pop else 0
+
+            # Critério 3: Uso do Solo
+            lu_risk_score = get_land_use_risk(study_area)
+
+            # ERI
+            ERI = 0.5 * C_wq + 0.3 * C_pop + 0.2 * lu_risk_score
+            risk_class = classify_eri(ERI)
+
+            results.append({
+                'date': row['date'],
+                'Chl_a': row['Chl_a'],
+                'TSS': row['TSS'],
+                'Turbidity': row['Turbidity'],
+                'C_wq': C_wq,
+                'C_pop': C_pop,
+                'lu_risk_score': lu_risk_score,
+                'ERI': ERI,
+                'Risk_Class': risk_class
+            })
+
+        df_eri = pd.DataFrame(results)
+        df_eri.to_csv(os.path.join(OUTPUT_DIR, 'environmental_risk_report_jaguaribe.csv'), index=False)
+        logging.info('Relatório ERI exportado com sucesso.')
         logging.info("Workflow concluído! O próximo passo seria adicionar as funções de visualização.")
         
     except Exception as e:
