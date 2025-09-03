@@ -1,4 +1,4 @@
-# Multi-Criteria Environmental Risk Assessment in Urban Watersheds using Remote Sensing and Google Earth Engine: A Case Study of the Jaguaribe River (PB)
+# Environmental Risk Index for Urban Basins using Remote Sensing: The Jaguaribe River Case
 
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 
